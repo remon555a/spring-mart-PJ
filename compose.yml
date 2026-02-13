@@ -7,11 +7,11 @@ services:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: password
     ports:
-      - "5432:5432"
+      - '5432:5432'
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      test: ['CMD-SHELL', 'pg_isready -U postgres']
       interval: 10s
       timeout: 5s
       retries: 5
@@ -31,7 +31,8 @@ services:
       DB_PASSWORD: password
       JWT_SECRET: springmart-secret-key-for-jwt-token-generation-change-in-production
     ports:
-      - "8080:8080"
+      - '8080:8080'
+      - '5005:5005'
     depends_on:
       db:
         condition: service_healthy
@@ -47,7 +48,7 @@ services:
       dockerfile: Dockerfile
     container_name: spring-mart-frontend
     ports:
-      - "3000:80"
+      - '3000:80'
     depends_on:
       - app
     restart: unless-stopped
@@ -60,4 +61,3 @@ volumes:
 networks:
   spring-mart-network:
     driver: bridge
-
