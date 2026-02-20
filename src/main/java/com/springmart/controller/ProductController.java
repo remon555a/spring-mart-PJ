@@ -43,9 +43,16 @@ public class ProductController {
         throw new UnsupportedOperationException("商品更新機能はまだ実装されていません");
     }
 
+    // @DeleteMapping("/{id}")
+    // public ResponseEntity<Void> deleteProduct(@PathVariable Long id) {
+    //     throw new UnsupportedOperationException("商品削除機能はまだ実装されていません");
+    // }
+
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteProduct(@PathVariable Long id) {
-        throw new UnsupportedOperationException("商品削除機能はまだ実装されていません");
-    }
+    productService.deleteProduct(id);
+    return ResponseEntity.noContent().build(); // 204
+}
+
 }
 
