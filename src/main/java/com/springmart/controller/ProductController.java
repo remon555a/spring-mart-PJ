@@ -38,9 +38,18 @@ public class ProductController {
         return ResponseEntity.status(HttpStatus.CREATED).body(product);
     }
 
+    // @PutMapping("/{id}")
+    // public ResponseEntity<ProductResponse> updateProduct(@PathVariable Long id, @Valid @RequestBody ProductRequest request) {
+    //     throw new UnsupportedOperationException("商品更新機能はまだ実装されていません");
+    // }
+
     @PutMapping("/{id}")
-    public ResponseEntity<ProductResponse> updateProduct(@PathVariable Long id, @Valid @RequestBody ProductRequest request) {
-        throw new UnsupportedOperationException("商品更新機能はまだ実装されていません");
+    public ResponseEntity<ProductResponse> updateProduct(
+        @PathVariable Long id,
+        @RequestBody ProductRequest request) {
+
+    ProductResponse updatedProduct = productService.updateProduct(id, request);
+    return ResponseEntity.ok(updatedProduct);
     }
 
     @DeleteMapping("/{id}")
