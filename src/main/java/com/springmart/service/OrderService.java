@@ -10,6 +10,9 @@ import com.springmart.repository.OrderDetailRepository;
 import com.springmart.repository.OrderRepository;
 import com.springmart.repository.ProductRepository;
 import com.springmart.repository.UserRepository;
+
+import jakarta.transaction.Transactional;
+
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -36,6 +39,7 @@ public class OrderService {
         this.userRepository = userRepository;
     }
 
+    @Transactional
     public OrderResponse createOrder(OrderRequest request) {
         String username;
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -63,14 +67,23 @@ public class OrderService {
                     .orElseThrow(() -> new RuntimeException("商品が見つかりません: " + productId));
 
 
-            if (inventory.getStockQuantity() <= quantity) {
+            // if (inventory.getStockQuantity() <= quantity) {
 
-                System.out.println("警告: 在庫が不足していますが、注文を続行します");
+            //     System.out.println("警告: 在庫が不足していますが、注文を続行します");
+            // }
+
+
+            // inventory.setStockQuantity(inventory.getStockQuantity() - quantity);
+            // inventoryRepository.save(inventory);
+
+            // 1. 在庫チェックを厳密にする（不足していたら即座に例外を投げる）
+            if (inventory.getStockQuantity() < quantity) {
+            throw new OutOfStockException("商品ID: " + productId + " の在庫が不足しています。");
             }
 
-
+            // 2. 在庫を減らして保存
             inventory.setStockQuantity(inventory.getStockQuantity() - quantity);
-            inventoryRepository.save(inventory);
+inventoryRepository.save(inventory);
 
             // 商品情報取得
             Product product = productRepository.findById(productId)
