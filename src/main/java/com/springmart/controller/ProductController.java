@@ -7,7 +7,6 @@ import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
 import java.util.List;
 
 @RestController
@@ -38,12 +37,8 @@ public class ProductController {
         return ResponseEntity.status(HttpStatus.CREATED).body(product);
     }
 
-    // @PutMapping("/{id}")
-    // public ResponseEntity<ProductResponse> updateProduct(@PathVariable Long id, @Valid @RequestBody ProductRequest request) {
-    //     throw new UnsupportedOperationException("商品更新機能はまだ実装されていません");
-    // }
-
     @PutMapping("/{id}")
+    @Valid
     public ResponseEntity<ProductResponse> updateProduct(
         @PathVariable Long id,
         @RequestBody ProductRequest request) {

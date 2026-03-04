@@ -36,30 +36,6 @@ const ProductManagement = () => {
     }
   };
 
-  // const handleSubmit = async (e) => {
-  //   e.preventDefault();
-  //   try {
-  //     const productData = {
-  //       name: formData.name,
-  //       description: formData.description,
-  //       price: parseInt(formData.price),
-  //       //initialStock: parseInt(formData.initialStock) || 0,
-  //     };
-
-  //     if (editingProduct) {
-  //       await updateProduct(editingProduct.id, productData);
-  //     } else {
-  //       await createProduct(productData);
-  //     }
-  //     setShowModal(false);
-  //     setEditingProduct(null);
-  //     resetForm();
-  //     loadProducts();
-  //   } catch (err) {
-  //     setError(err.response?.data?.message || '商品の保存に失敗しました');
-  //   }
-  // };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     console.log('--- 保存処理開始 ---');
@@ -76,7 +52,6 @@ const ProductManagement = () => {
 
       if (editingProduct) {
         console.log('UPDATEを実行します。ID:', editingProduct.id);
-        // ここでエラーが起きている可能性大
         const result = await updateProduct(editingProduct.id, productData);
         console.log('UPDATE成功:', result);
       } else {
@@ -89,7 +64,6 @@ const ProductManagement = () => {
       resetForm();
       loadProducts();
     } catch (err) {
-      // ★ ここが最重要：エラーの正体をコンソールに詳しく出す
       console.error('【致命的エラー発生】:', err);
       console.log('エラーのレスポンス詳細:', err.response);
 
