@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { getProducts, createProduct, deleteProduct } from '../../api/products';
-//import { getProducts, createProduct, deleteProduct } from '../../api/products';
 
 const ProductManagement = () => {
   const [products, setProducts] = useState([]);
@@ -74,16 +73,6 @@ const ProductManagement = () => {
     setShowModal(true);
   };
 
-  // const handleDelete = async (id) => {
-  //   if (!window.confirm('この商品を削除しますか？')) return;
-
-  //   try {
-  //     setError('商品削除機能は現在未実装です。バックエンドの実装が必要です');
-  //   } catch (err) {
-  //     setError('商品の削除に失敗しました');
-  //   }
-  // };
-
   const handleDelete = async (id) => {
     const confirmed = window.confirm('本当に削除しますか？');
     if (!confirmed) return;
@@ -91,8 +80,6 @@ const ProductManagement = () => {
     try {
       await deleteProduct(id);
       alert('商品を削除しました');
-
-      // 一覧再取得
       const updatedProducts = await getProducts();
       setProducts(updatedProducts);
     } catch (error) {
