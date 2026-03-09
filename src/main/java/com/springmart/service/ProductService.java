@@ -4,8 +4,10 @@ import com.springmart.dto.ProductRequest;
 import com.springmart.dto.ProductResponse;
 import com.springmart.entity.Inventory;
 import com.springmart.entity.Product;
+import com.springmart.exception.ResourceNotFoundException;
 import com.springmart.repository.InventoryRepository;
 import com.springmart.repository.ProductRepository;
+import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -53,7 +55,13 @@ public class ProductService {
         throw new UnsupportedOperationException("商品更新機能はまだ実装されていません");
     }
 
+    @Transactional
     public void deleteProduct(Long id) {
-        throw new UnsupportedOperationException("商品削除機能はまだ実装されていません");
-    }
+
+    Product product = productRepository.findById(id)
+            .orElseThrow(() -> new ResourceNotFoundException("商品が見つかりません: " + id));
+
+     productRepository.delete(product);
+}
+
 }

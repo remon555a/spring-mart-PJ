@@ -45,7 +45,9 @@ public class ProductController {
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteProduct(@PathVariable Long id) {
-        throw new UnsupportedOperationException("商品削除機能はまだ実装されていません");
-    }
+    productService.deleteProduct(id);
+    return ResponseEntity.noContent().build();
+}
+
 }
 
