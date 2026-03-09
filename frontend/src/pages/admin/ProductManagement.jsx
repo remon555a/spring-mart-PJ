@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { getProducts, createProduct } from '../../api/products';
+import { getProducts, createProduct, updateProduct } from '../../api/products';
 
 const ProductManagement = () => {
   const [products, setProducts] = useState([]);
@@ -11,7 +11,7 @@ const ProductManagement = () => {
     name: '',
     description: '',
     price: '',
-    initialStock: ''
+    initialStock: '',
   });
 
   useEffect(() => {
@@ -26,7 +26,11 @@ const ProductManagement = () => {
       setError('');
     } catch (err) {
       console.error('Failed to load products:', err);
-      setError(err.response?.data?.message || err.message || '商品一覧の取得に失敗しました');
+      setError(
+        err.response?.data?.message ||
+          err.message ||
+          '商品一覧の取得に失敗しました',
+      );
     } finally {
       setLoading(false);
     }
@@ -34,18 +38,24 @@ const ProductManagement = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    console.log('--- 保存処理開始 ---');
+    console.log('現在の編集対象 (editingProduct):', editingProduct);
+    console.log('入力データ (formData):', formData);
+
     try {
       const productData = {
         name: formData.name,
         description: formData.description,
         price: parseInt(formData.price),
-        initialStock: parseInt(formData.initialStock) || 0
+        initialStock: parseInt(formData.initialStock) || 0,
       };
 
       if (editingProduct) {
-        setError('商品更新機能は現在未実装です。バックエンドの実装が必要です');
-        return;
+        console.log('UPDATEを実行します。ID:', editingProduct.id);
+        const result = await updateProduct(editingProduct.id, productData);
+        console.log('UPDATE成功:', result);
       } else {
+        console.log('CREATEを実行します');
         await createProduct(productData);
       }
 
@@ -54,6 +64,9 @@ const ProductManagement = () => {
       resetForm();
       loadProducts();
     } catch (err) {
+      console.error('【致命的エラー発生】:', err);
+      console.log('エラーのレスポンス詳細:', err.response);
+
       setError(err.response?.data?.message || '商品の保存に失敗しました');
     }
   };
@@ -62,9 +75,9 @@ const ProductManagement = () => {
     setEditingProduct(product);
     setFormData({
       name: product.name,
-      description: product.description || '',
-      price: product.price.toString(),
-      initialStock: ''
+      description: product.description,
+      price: product.price,
+      initialStock: product.initialStock || 0,
     });
     setShowModal(true);
   };
@@ -107,8 +120,18 @@ const ProductManagement = () => {
             onClick={openCreateModal}
             className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium flex items-center gap-2 transition-colors"
           >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+            <svg
+              className="w-5 h-5"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M12 4v16m8-8H4"
+              />
             </svg>
             新規商品登録
           </button>
@@ -127,11 +150,21 @@ const ProductManagement = () => {
             <table className="w-full">
               <thead className="bg-gray-50 border-b border-gray-200">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">商品名</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">説明</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">価格</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">操作</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    ID
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    商品名
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    説明
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    価格
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    操作
+                  </th>
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
@@ -156,8 +189,18 @@ const ProductManagement = () => {
                           className="text-blue-600 hover:text-blue-900 p-1 rounded transition-colors"
                           title="編集"
                         >
-                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                          <svg
+                            className="w-5 h-5"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+                            />
                           </svg>
                         </button>
                         <button
@@ -165,8 +208,18 @@ const ProductManagement = () => {
                           className="text-red-600 hover:text-red-900 p-1 rounded transition-colors"
                           title="削除"
                         >
-                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                          <svg
+                            className="w-5 h-5"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                            />
                           </svg>
                         </button>
                       </div>
@@ -179,11 +232,25 @@ const ProductManagement = () => {
 
           {products.length === 0 && (
             <div className="text-center py-12">
-              <svg className="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-5.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 003.586 13H4" />
+              <svg
+                className="mx-auto h-12 w-12 text-gray-400"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-5.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 003.586 13H4"
+                />
               </svg>
-              <h3 className="mt-2 text-sm font-medium text-gray-900">商品がありません</h3>
-              <p className="mt-1 text-sm text-gray-500">新規商品を登録してください。</p>
+              <h3 className="mt-2 text-sm font-medium text-gray-900">
+                商品がありません
+              </h3>
+              <p className="mt-1 text-sm text-gray-500">
+                新規商品を登録してください。
+              </p>
             </div>
           )}
         </div>
@@ -201,8 +268,18 @@ const ProductManagement = () => {
                     onClick={() => setShowModal(false)}
                     className="text-gray-400 hover:text-gray-600"
                   >
-                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    <svg
+                      className="w-6 h-6"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M6 18L18 6M6 6l12 12"
+                      />
                     </svg>
                   </button>
                 </div>
@@ -215,17 +292,26 @@ const ProductManagement = () => {
                     <input
                       type="text"
                       value={formData.name}
-                      onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                      onChange={(e) =>
+                        setFormData({ ...formData, name: e.target.value })
+                      }
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       required
                     />
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">説明</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      説明
+                    </label>
                     <textarea
                       value={formData.description}
-                      onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          description: e.target.value,
+                        })
+                      }
                       rows="3"
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     />
@@ -238,7 +324,9 @@ const ProductManagement = () => {
                     <input
                       type="number"
                       value={formData.price}
-                      onChange={(e) => setFormData({ ...formData, price: e.target.value })}
+                      onChange={(e) =>
+                        setFormData({ ...formData, price: e.target.value })
+                      }
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       required
                       min="0"
@@ -247,11 +335,18 @@ const ProductManagement = () => {
 
                   {!editingProduct && (
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">初期在庫数</label>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        初期在庫数
+                      </label>
                       <input
                         type="number"
                         value={formData.initialStock}
-                        onChange={(e) => setFormData({ ...formData, initialStock: e.target.value })}
+                        onChange={(e) =>
+                          setFormData({
+                            ...formData,
+                            initialStock: e.target.value,
+                          })
+                        }
                         className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                         min="0"
                       />
@@ -284,4 +379,3 @@ const ProductManagement = () => {
 };
 
 export default ProductManagement;
-
