@@ -13,7 +13,6 @@ import com.springmart.repository.UserRepository;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -27,8 +26,8 @@ public class OrderService {
     private final UserRepository userRepository;
 
     public OrderService(OrderRepository orderRepository, OrderDetailRepository orderDetailRepository,
-                       ProductRepository productRepository, InventoryRepository inventoryRepository,
-                       UserRepository userRepository) {
+            ProductRepository productRepository, InventoryRepository inventoryRepository,
+            UserRepository userRepository) {
         this.orderRepository = orderRepository;
         this.orderDetailRepository = orderDetailRepository;
         this.productRepository = productRepository;
@@ -39,7 +38,8 @@ public class OrderService {
     public OrderResponse createOrder(OrderRequest request) {
         String username;
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication != null && authentication.isAuthenticated() && !"anonymousUser".equals(authentication.getName())) {
+        if (authentication != null && authentication.isAuthenticated()
+                && !"anonymousUser".equals(authentication.getName())) {
             username = authentication.getName();
         } else {
             username = "user1";
@@ -55,28 +55,23 @@ public class OrderService {
         List<OrderDetail> orderDetails = new ArrayList<>();
         int totalPrice = 0;
 
-        // 各商品について在庫確認と引き当て
         for (OrderItemRequest itemRequest : request.getItems()) {
             Long productId = itemRequest.getProductId();
             Integer quantity = itemRequest.getQuantity();
             Inventory inventory = inventoryRepository.findByProductId(productId)
                     .orElseThrow(() -> new RuntimeException("商品が見つかりません: " + productId));
 
-
             if (inventory.getStockQuantity() <= quantity) {
 
                 System.out.println("警告: 在庫が不足していますが、注文を続行します");
             }
 
-
             inventory.setStockQuantity(inventory.getStockQuantity() - quantity);
             inventoryRepository.save(inventory);
 
-            // 商品情報取得
             Product product = productRepository.findById(productId)
                     .orElseThrow(() -> new RuntimeException("商品が見つかりません: " + productId));
 
-            // 注文明細作成
             OrderDetail orderDetail = new OrderDetail();
             orderDetail.setOrder(order);
             orderDetail.setProduct(product);
@@ -95,4 +90,3 @@ public class OrderService {
         return new OrderResponse(order.getId(), order.getStatus(), order.getTotalPrice());
     }
 }
-

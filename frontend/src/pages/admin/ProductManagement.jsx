@@ -38,9 +38,6 @@ const ProductManagement = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log('--- 保存処理開始 ---');
-    console.log('現在の編集対象 (editingProduct):', editingProduct);
-    console.log('入力データ (formData):', formData);
 
     try {
       const productData = {
@@ -51,22 +48,15 @@ const ProductManagement = () => {
       };
 
       if (editingProduct) {
-        console.log('UPDATEを実行します。ID:', editingProduct.id);
-        const result = await updateProduct(editingProduct.id, productData);
-        console.log('UPDATE成功:', result);
+        await updateProduct(editingProduct.id, productData);
       } else {
-        console.log('CREATEを実行します');
         await createProduct(productData);
       }
-
       setShowModal(false);
       setEditingProduct(null);
       resetForm();
       loadProducts();
     } catch (err) {
-      console.error('【致命的エラー発生】:', err);
-      console.log('エラーのレスポンス詳細:', err.response);
-
       setError(err.response?.data?.message || '商品の保存に失敗しました');
     }
   };
@@ -75,7 +65,7 @@ const ProductManagement = () => {
     setEditingProduct(product);
     setFormData({
       name: product.name,
-      description: product.description,
+      description: product.description ?? '',
       price: product.price,
       initialStock: product.initialStock || 0,
     });
