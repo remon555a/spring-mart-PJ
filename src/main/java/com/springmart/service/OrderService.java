@@ -4,16 +4,15 @@ import com.springmart.dto.OrderItemRequest;
 import com.springmart.dto.OrderRequest;
 import com.springmart.dto.OrderResponse;
 import com.springmart.entity.*;
-import com.springmart.exception.OutOfStockException;
 import com.springmart.repository.InventoryRepository;
 import com.springmart.repository.OrderDetailRepository;
 import com.springmart.repository.OrderRepository;
 import com.springmart.repository.ProductRepository;
 import com.springmart.repository.UserRepository;
+import jakarta.transaction.Transactional;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -21,7 +20,6 @@ import java.util.List;
 public class OrderService {
 
     private final OrderRepository orderRepository;
-    private final OrderDetailRepository orderDetailRepository;
     private final ProductRepository productRepository;
     private final InventoryRepository inventoryRepository;
     private final UserRepository userRepository;
@@ -30,12 +28,12 @@ public class OrderService {
             ProductRepository productRepository, InventoryRepository inventoryRepository,
             UserRepository userRepository) {
         this.orderRepository = orderRepository;
-        this.orderDetailRepository = orderDetailRepository;
         this.productRepository = productRepository;
         this.inventoryRepository = inventoryRepository;
         this.userRepository = userRepository;
     }
 
+    @Transactional
     public OrderResponse createOrder(OrderRequest request) {
         String username;
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
