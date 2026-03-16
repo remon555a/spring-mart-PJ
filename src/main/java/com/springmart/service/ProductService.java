@@ -61,22 +61,6 @@ public class ProductService {
 
     @Transactional
     public void deleteProduct(Long id) {
-
-        if (id == null) {
-            throw new IllegalArgumentException("IDがnullです");
-        }
-
-        Product product = productRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("商品が見つかりません: " + id));
-
-        if (orderDetailRepository.existsByProduct_Id(id)) {
-            throw new IllegalStateException("注文履歴がある商品は削除できません。");
-        }
-
-        inventoryRepository.deleteById(id);
-        if (product != null) {
-            productRepository.delete(product);
-        }
+        throw new UnsupportedOperationException("商品削除機能はまだ実装されていません");
     }
-
 }

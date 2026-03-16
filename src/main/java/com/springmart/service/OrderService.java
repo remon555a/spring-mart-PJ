@@ -4,6 +4,7 @@ import com.springmart.dto.OrderItemRequest;
 import com.springmart.dto.OrderRequest;
 import com.springmart.dto.OrderResponse;
 import com.springmart.entity.*;
+import com.springmart.exception.OutOfStockException;
 import com.springmart.repository.InventoryRepository;
 import com.springmart.repository.OrderDetailRepository;
 import com.springmart.repository.OrderRepository;
@@ -60,9 +61,8 @@ public class OrderService {
             Inventory inventory = inventoryRepository.findByProductId(productId)
                     .orElseThrow(() -> new RuntimeException("商品が見つかりません: " + productId));
 
-            if (inventory.getStockQuantity() <= quantity) {
-
-                System.out.println("警告: 在庫が不足していますが、注文を続行します");
+            if (inventory.getStockQuantity() < quantity) {
+                throw new OutOfStockException("商品ID: " + productId + " の在庫が不足しています。");
             }
 
             inventory.setStockQuantity(inventory.getStockQuantity() - quantity);
@@ -83,10 +83,7 @@ public class OrderService {
 
         order.setTotalPrice(totalPrice);
         order.setOrderDetails(orderDetails);
-
         order = orderRepository.save(order);
-
         return new OrderResponse(order.getId(), order.getStatus(), order.getTotalPrice());
     }
-
 }
