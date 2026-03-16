@@ -4,8 +4,11 @@ import com.springmart.dto.ProductRequest;
 import com.springmart.dto.ProductResponse;
 import com.springmart.entity.Inventory;
 import com.springmart.entity.Product;
+import com.springmart.exception.ResourceNotFoundException;
 import com.springmart.repository.InventoryRepository;
+import com.springmart.repository.OrderDetailRepository;
 import com.springmart.repository.ProductRepository;
+import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -15,10 +18,13 @@ public class ProductService {
 
     private final ProductRepository productRepository;
     private final InventoryRepository inventoryRepository;
+    private final OrderDetailRepository orderDetailRepository;
 
-    public ProductService(ProductRepository productRepository, InventoryRepository inventoryRepository) {
+    public ProductService(ProductRepository productRepository, InventoryRepository inventoryRepository,
+            OrderDetailRepository orderDetailRepository) {
         this.productRepository = productRepository;
         this.inventoryRepository = inventoryRepository;
+        this.orderDetailRepository = orderDetailRepository;
     }
 
     public List<ProductResponse> getAllProducts() {
@@ -53,7 +59,24 @@ public class ProductService {
         throw new UnsupportedOperationException("商品更新機能はまだ実装されていません");
     }
 
+    @Transactional
     public void deleteProduct(Long id) {
-        throw new UnsupportedOperationException("商品削除機能はまだ実装されていません");
+
+        if (id == null) {
+            throw new IllegalArgumentException("IDがnullです");
+        }
+
+        Product product = productRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("商品が見つかりません: " + id));
+
+        if (orderDetailRepository.existsByProduct_Id(id)) {
+            throw new IllegalStateException("注文履歴がある商品は削除できません。");
+        }
+
+        inventoryRepository.deleteById(id);
+        if (product != null) {
+            productRepository.delete(product);
+        }
     }
+
 }
