@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { getProducts, createProduct, deleteProduct } from '../../api/products';
+import { getProducts, createProduct, updateProduct ,deleteProduct} from '../../api/products';
 
 const ProductManagement = () => {
   const [products, setProducts] = useState([]);
@@ -38,6 +38,7 @@ const ProductManagement = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
     try {
       const productData = {
         name: formData.name,
@@ -47,12 +48,10 @@ const ProductManagement = () => {
       };
 
       if (editingProduct) {
-        setError('商品更新機能は現在未実装です。バックエンドの実装が必要です');
-        return;
+        await updateProduct(editingProduct.id, productData);
       } else {
         await createProduct(productData);
       }
-
       setShowModal(false);
       setEditingProduct(null);
       resetForm();
@@ -66,9 +65,9 @@ const ProductManagement = () => {
     setEditingProduct(product);
     setFormData({
       name: product.name,
-      description: product.description || '',
-      price: product.price.toString(),
-      initialStock: '',
+      description: product.description ?? '',
+      price: product.price,
+      initialStock: product.initialStock || 0,
     });
     setShowModal(true);
   };

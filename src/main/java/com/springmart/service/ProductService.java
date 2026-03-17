@@ -55,12 +55,42 @@ public class ProductService {
         return new ProductResponse(product.getId(), product.getName(), product.getDescription(), product.getPrice());
     }
 
+    @Transactional
     public ProductResponse updateProduct(Long id, ProductRequest request) {
-        throw new UnsupportedOperationException("商品更新機能はまだ実装されていません");
+
+        Product product = productRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("商品が見つかりません: " + id));
+
+        product.setName(request.getName());
+        product.setDescription(request.getDescription());
+        product.setPrice(request.getPrice());
+
+        product = productRepository.save(product);
+
+        return new ProductResponse(
+                product.getId(),
+                product.getName(),
+                product.getDescription(),
+                product.getPrice());
     }
 
     @Transactional
     public void deleteProduct(Long id) {
-        throw new UnsupportedOperationException("商品削除機能はまだ実装されていません");
+
+        if (id == null) {
+            throw new IllegalArgumentException("IDがnullです");
+        }
+
+        Product product = productRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("商品が見つかりません: " + id));
+
+        if (orderDetailRepository.existsByProduct_Id(id)) {
+            throw new IllegalStateException("注文履歴がある商品は削除できません。");
+        }
+
+        inventoryRepository.deleteById(id);
+        if (product != null) {
+            productRepository.delete(product);
+        }
     }
 }
