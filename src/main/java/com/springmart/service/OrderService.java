@@ -10,6 +10,7 @@ import com.springmart.repository.OrderDetailRepository;
 import com.springmart.repository.OrderRepository;
 import com.springmart.repository.ProductRepository;
 import com.springmart.repository.UserRepository;
+import jakarta.transaction.Transactional;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -20,7 +21,6 @@ import java.util.List;
 public class OrderService {
 
     private final OrderRepository orderRepository;
-    private final OrderDetailRepository orderDetailRepository;
     private final ProductRepository productRepository;
     private final InventoryRepository inventoryRepository;
     private final UserRepository userRepository;
@@ -29,12 +29,12 @@ public class OrderService {
             ProductRepository productRepository, InventoryRepository inventoryRepository,
             UserRepository userRepository) {
         this.orderRepository = orderRepository;
-        this.orderDetailRepository = orderDetailRepository;
         this.productRepository = productRepository;
         this.inventoryRepository = inventoryRepository;
         this.userRepository = userRepository;
     }
 
+    @Transactional
     public OrderResponse createOrder(OrderRequest request) {
         String username;
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -61,9 +61,8 @@ public class OrderService {
             Inventory inventory = inventoryRepository.findByProductId(productId)
                     .orElseThrow(() -> new RuntimeException("商品が見つかりません: " + productId));
 
-            if (inventory.getStockQuantity() <= quantity) {
-
-                System.out.println("警告: 在庫が不足していますが、注文を続行します");
+            if (inventory.getStockQuantity() < quantity) {
+                throw new OutOfStockException("商品ID: " + productId + " の在庫が不足しています。");
             }
 
             inventory.setStockQuantity(inventory.getStockQuantity() - quantity);
@@ -84,9 +83,7 @@ public class OrderService {
 
         order.setTotalPrice(totalPrice);
         order.setOrderDetails(orderDetails);
-
         order = orderRepository.save(order);
-
         return new OrderResponse(order.getId(), order.getStatus(), order.getTotalPrice());
     }
 }
