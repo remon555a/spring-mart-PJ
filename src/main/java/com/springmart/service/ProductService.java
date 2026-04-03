@@ -39,6 +39,7 @@ public class ProductService {
         return new ProductResponse(product.getId(), product.getName(), product.getDescription(), product.getPrice());
     }
 
+    @Transactional
     public ProductResponse createProduct(ProductRequest request) {
 
         Product product = new Product();
