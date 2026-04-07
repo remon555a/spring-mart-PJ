@@ -16,13 +16,13 @@ import java.util.Optional;
 @Repository
 public interface InventoryRepository extends JpaRepository<Inventory, Long> {
 
-    @Lock(LockModeType.PESSIMISTIC_WRITE)
-    @Query("SELECT i FROM Inventory i WHERE i.productId = :productId")
-    Optional<Inventory> findByIdForUpdate(@Param("productId") Long productId);
-
     Optional<Inventory> findByProductId(Long productId);
 
     @Modifying
     @Transactional
     void deleteByProduct(Product product);
+
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("SELECT i FROM Inventory i WHERE i.product.id = :productId")
+    Optional<Inventory> findByProductIdWithLock(@Param("productId") Long productId);
 }

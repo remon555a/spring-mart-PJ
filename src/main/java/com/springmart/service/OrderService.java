@@ -58,7 +58,7 @@ public class OrderService {
         for (OrderItemRequest itemRequest : request.getItems()) {
             Long productId = itemRequest.getProductId();
             Integer quantity = itemRequest.getQuantity();
-            Inventory inventory = inventoryRepository.findByProductId(productId)
+            Inventory inventory = inventoryRepository.findByProductIdWithLock(productId)
                     .orElseThrow(() -> new RuntimeException("商品が見つかりません: " + productId));
 
             if (inventory.getStockQuantity() < quantity) {
