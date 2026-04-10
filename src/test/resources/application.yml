@@ -1,0 +1,24 @@
+spring:
+  datasource:
+    # メモリ上で動作するH2データベースを使用
+    url: jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1;MODE=PostgreSQL
+    driver-class-name: org.h2.Driver
+    username: sa
+    password: ''
+
+  jpa:
+    hibernate:
+      # テスト実行時にテーブルを自動作成する
+      ddl-auto: create-drop
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.H2Dialect
+
+  # 既存のSQLスクリプト読み込みがテストの邪魔をしないようOFFにする（必要に応じて）
+  sql:
+    init:
+      mode: never
+
+jwt:
+  secret: springmart-secret-key-for-test-concurrency-check-1234567890
+  expiration: 86400000
