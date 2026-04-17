@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import java.time.LocalDateTime;
+import jakarta.persistence.Version;
 
 @Entity
 @Table(name = "products")
@@ -30,7 +31,7 @@ public class Product {
     private LocalDateTime createdAt;
 
     @Version
-    private Long version;
+    private Integer version;
 
     @PrePersist
     protected void onCreate() {

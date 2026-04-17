@@ -13,7 +13,8 @@ CREATE TABLE IF NOT EXISTS products (
     name VARCHAR(255) NOT NULL,
     description TEXT,
     price INTEGER NOT NULL,
-    created_at TIMESTAMP NOT NULL
+    created_at TIMESTAMP NOT NULL,
+    version INTEGER NOT NULL DEFAULT 0
 );
 
 -- 在庫テーブル
@@ -21,6 +22,7 @@ CREATE TABLE IF NOT EXISTS inventory (
     product_id BIGINT PRIMARY KEY,
     stock_quantity INTEGER NOT NULL,
     updated_at TIMESTAMP NOT NULL,
+    version INTEGER NOT NULL DEFAULT 0,
     CONSTRAINT fk_inventory_product FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE
 );
 

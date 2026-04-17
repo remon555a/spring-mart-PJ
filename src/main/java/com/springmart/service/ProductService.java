@@ -29,14 +29,15 @@ public class ProductService {
 
     public List<ProductResponse> getAllProducts() {
         return productRepository.findAll().stream()
-                .map(p -> new ProductResponse(p.getId(), p.getName(), p.getDescription(), p.getPrice()))
+                .map(p -> new ProductResponse(p.getId(), p.getName(), p.getDescription(), p.getPrice(), p.getVersion()))
                 .collect(Collectors.toList());
     }
 
     public ProductResponse getProductById(Long id) {
         Product product = productRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("商品が見つかりません: " + id));
-        return new ProductResponse(product.getId(), product.getName(), product.getDescription(), product.getPrice());
+        return new ProductResponse(product.getId(), product.getName(), product.getDescription(), product.getPrice(),
+                product.getVersion());
     }
 
     @Transactional
@@ -53,7 +54,8 @@ public class ProductService {
         inventory.setStockQuantity(request.getInitialStock());
         inventoryRepository.save(inventory);
 
-        return new ProductResponse(product.getId(), product.getName(), product.getDescription(), product.getPrice());
+        return new ProductResponse(product.getId(), product.getName(), product.getDescription(), product.getPrice(),
+                product.getVersion());
     }
 
     @Transactional
@@ -61,6 +63,10 @@ public class ProductService {
 
         Product product = productRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("商品が見つかりません: " + id));
+
+        if (request.getVersion() != null && !product.getVersion().equals(request.getVersion())) {
+            throw new org.springframework.orm.ObjectOptimisticLockingFailureException(Product.class, id);
+        }
 
         product.setName(request.getName());
         product.setDescription(request.getDescription());
@@ -72,7 +78,8 @@ public class ProductService {
                 product.getId(),
                 product.getName(),
                 product.getDescription(),
-                product.getPrice());
+                product.getPrice(),
+                product.getVersion());
     }
 
     @Transactional
