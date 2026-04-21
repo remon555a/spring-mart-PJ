@@ -15,6 +15,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @SpringBootTest
 public class ProductServiceConcurrencyTest {
@@ -29,7 +30,6 @@ public class ProductServiceConcurrencyTest {
 
   @BeforeEach
   void setUp() {
-    // テスト用のデータを1件作成
     productRepository.deleteAll();
     Product product = new Product();
     product.setName("初期商品");
@@ -42,29 +42,25 @@ public class ProductServiceConcurrencyTest {
   void testUpdateProductConcurrency() throws InterruptedException {
     int numberOfThreads = 2;
     ExecutorService executorService = Executors.newFixedThreadPool(numberOfThreads);
-
-    // 開始タイミングを合わせるためのラッチ
     CountDownLatch startLatch = new CountDownLatch(1);
-    // 全終了を待つためのラッチ
     CountDownLatch doneLatch = new CountDownLatch(numberOfThreads);
 
     AtomicInteger successCount = new AtomicInteger(0);
     AtomicInteger failureCount = new AtomicInteger(0);
 
     for (int i = 0; i < numberOfThreads; i++) {
-      final String newName = "商品更新-" + i;
       executorService.execute(() -> {
         try {
-          startLatch.await(); // 全スレッドがここで待機
+          startLatch.await();
 
           ProductRequest request = new ProductRequest();
-          request.setName(newName);
+          request.setName("並行更新");
           request.setPrice(2000);
+          request.setVersion(0);
 
           productService.updateProduct(targetProductId, request);
           successCount.incrementAndGet();
         } catch (ObjectOptimisticLockingFailureException e) {
-          // 楽観的ロックエラーを検知
           failureCount.incrementAndGet();
         } catch (Exception e) {
           e.printStackTrace();
@@ -74,13 +70,24 @@ public class ProductServiceConcurrencyTest {
       });
     }
 
-    startLatch.countDown(); // 2つのスレッドを一斉に動かす
-    doneLatch.await(); // 両方の処理が終わるまで待つ
+    startLatch.countDown();
+    doneLatch.await();
 
-    // 検証：1人は成功し、もう1人は楽観的ロック失敗（version不整合）になるはず
     assertEquals(1, successCount.get(), "一方は成功すること");
-    assertEquals(1, failureCount.get(), "もう一方はロック失敗すること");
+    assertEquals(1, failureCount.get(), "もう一方は楽観的ロックで失敗すること");
 
     executorService.shutdown();
+  }
+
+  @Test
+  void testUpdateProduct_OldVersion_ShouldThrowException() {
+    ProductRequest request = new ProductRequest();
+    request.setName("古いバージョンで更新");
+    request.setPrice(2000);
+    request.setVersion(999);
+
+    assertThrows(ObjectOptimisticLockingFailureException.class, () -> {
+      productService.updateProduct(targetProductId, request);
+    });
   }
 }
