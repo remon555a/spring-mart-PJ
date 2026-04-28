@@ -4,7 +4,7 @@ import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
+import jakarta.persistence.Version;
 import java.time.LocalDateTime;
 
 @Entity
@@ -13,26 +13,28 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 public class Inventory {
-    
+
     @Id
     @Column(name = "product_id")
     private Long productId;
-    
+
     @OneToOne
     @JoinColumn(name = "product_id")
     @MapsId
     private Product product;
-    
+
     @Column(name = "stock_quantity", nullable = false)
     private Integer stockQuantity;
-    
+
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
-    
+
+    @Version
+    private Integer version;
+
     @PrePersist
     @PreUpdate
     protected void onUpdate() {
         updatedAt = LocalDateTime.now();
     }
 }
-

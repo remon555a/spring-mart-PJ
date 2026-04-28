@@ -1,5 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { getProducts, createProduct, updateProduct ,deleteProduct} from '../../api/products';
+import {
+  getProducts,
+  createProduct,
+  updateProduct,
+  deleteProduct,
+} from '../../api/products';
 
 const ProductManagement = () => {
   const [products, setProducts] = useState([]);
@@ -12,6 +17,7 @@ const ProductManagement = () => {
     description: '',
     price: '',
     initialStock: '',
+    version: null,
   });
 
   useEffect(() => {
@@ -45,6 +51,7 @@ const ProductManagement = () => {
         description: formData.description,
         price: parseInt(formData.price),
         initialStock: parseInt(formData.initialStock) || 0,
+        version: formData.version,
       };
 
       if (editingProduct) {
@@ -68,6 +75,7 @@ const ProductManagement = () => {
       description: product.description ?? '',
       price: product.price,
       initialStock: product.initialStock || 0,
+      version: product.version,
     });
     setShowModal(true);
   };
