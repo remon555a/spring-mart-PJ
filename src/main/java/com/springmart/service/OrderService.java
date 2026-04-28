@@ -15,6 +15,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 @Service
@@ -55,21 +56,24 @@ public class OrderService {
         List<OrderDetail> orderDetails = new ArrayList<>();
         int totalPrice = 0;
 
-        for (OrderItemRequest itemRequest : request.getItems()) {
+        for (OrderItemRequest itemRequest : request.getItems().stream()
+                .sorted(Comparator.comparing(OrderItemRequest::getProductId))
+                .toList()) {
+
             Long productId = itemRequest.getProductId();
             Integer quantity = itemRequest.getQuantity();
-            Inventory inventory = inventoryRepository.findByProductId(productId)
-                    .orElseThrow(() -> new RuntimeException("商品が見つかりません: " + productId));
+
+            Inventory inventory = inventoryRepository.findByProductIdWithLock(productId)
+                    .orElseThrow(() -> new RuntimeException("在庫データが見つかりません: " + productId));
 
             if (inventory.getStockQuantity() < quantity) {
                 throw new OutOfStockException("商品ID: " + productId + " の在庫が不足しています。");
             }
 
-            inventory.setStockQuantity(inventory.getStockQuantity() - quantity);
-            inventoryRepository.save(inventory);
-
-            Product product = productRepository.findById(productId)
+            Product product = productRepository.findByIdWithLock(productId)
                     .orElseThrow(() -> new RuntimeException("商品が見つかりません: " + productId));
+
+            inventory.setStockQuantity(inventory.getStockQuantity() - quantity);
 
             OrderDetail orderDetail = new OrderDetail();
             orderDetail.setOrder(order);
