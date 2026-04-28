@@ -35,7 +35,7 @@ public class ProductService {
 
     public ProductResponse getProductById(Long id) {
         Product product = productRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("商品が見つかりません: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("商品が見つかりません: " + id));
         return new ProductResponse(product.getId(), product.getName(), product.getDescription(), product.getPrice(),
                 product.getVersion());
     }
@@ -62,9 +62,13 @@ public class ProductService {
     public ProductResponse updateProduct(Long id, ProductRequest request) {
 
         Product product = productRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("商品が見つかりません: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("商品が見つかりません: " + id));
 
-        if (request.getVersion() != null && !product.getVersion().equals(request.getVersion())) {
+        if (request.getVersion() == null) {
+            throw new IllegalArgumentException("更新には version が必須です。");
+        }
+
+        if (!product.getVersion().equals(request.getVersion())) {
             throw new org.springframework.orm.ObjectOptimisticLockingFailureException(Product.class, id);
         }
 

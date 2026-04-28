@@ -19,6 +19,7 @@ public class ProductRequest {
     @Min(value = 0, message = "初期在庫数は0以上である必要があります")
     private Integer initialStock;
 
+    @NotNull(message = "バージョン情報は必須です")
     private Integer version;
 
     public Integer getVersion() {
